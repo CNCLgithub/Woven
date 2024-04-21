@@ -8,3 +8,8 @@ This folder contains the scripts for implementing Woven: A simulation-based prob
 
 
 ---
+## Download the singularity environment
+
+## Run the inference
+
+## Citation

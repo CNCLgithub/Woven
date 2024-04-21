@@ -1,2 +1,7 @@
 # Woven
-Woven: A physics-based probabilistic model of soft object perception
+A simulation-based probabilistic model of soft object perception
+
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Matlab](https://img.shields.io/badge/language-Julia-red.svg)]()
+
+![Subtitles in action]()

@@ -3,6 +3,7 @@
 
 # Woven
 This folder contains the scripts used for implementing Woven: A simulation-based probabilistic model of soft object perception.
+
 <img src="https://github.com/CNCLgithub/Woven/blob/main/woven.png" height="200">
 
 

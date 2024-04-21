@@ -2,10 +2,8 @@
 [![Woven](https://img.shields.io/badge/language-Julia-red.svg)]()
 
 # Woven
-A simulation-based probabilistic model of soft object perception
-
-
-
+This folder contains the scripts used for implementing Woven: A simulation-based probabilistic model of soft object perception.
 <img src="https://github.com/CNCLgithub/Woven/blob/main/woven.png" height="200">
 
 
+---

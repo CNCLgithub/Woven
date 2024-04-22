@@ -7,8 +7,8 @@ This folder contains the scripts for implementing Woven: A simulation-based prob
 <img src="https://github.com/CNCLgithub/Woven/blob/main/woven.png" height="200">
 
 
----
-## Download the singularity environment
+
+### Download the singularity environment
 
 ## Run the inference
 

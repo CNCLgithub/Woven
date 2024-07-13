@@ -4,7 +4,7 @@
 # Woven
 This folder contains the scripts for implementing Woven: A simulation-based probabilistic model of soft object perception.
 
-# Setup
+## Setup
 The script downloads the Singularity environment and the necessary data.
 
 ```

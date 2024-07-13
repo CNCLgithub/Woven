@@ -1,0 +1,53 @@
+*.jpg
+*.asv
+*.simg
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IPython/Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# Virtual Environment
+venv/
+env/
+
+# IDE/Editor specific
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Ignore these files in case you use a macOS system
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# Ignore logs and databases
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+
+# Ignore Python-related files
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignore generated files
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.mo

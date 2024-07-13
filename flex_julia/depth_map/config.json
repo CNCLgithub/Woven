@@ -1,0 +1,9 @@
+{
+  "blender_bin": "/opt/blender-2.91.0-linux64/blender",
+  "blender_file_root_path": "../experiments/obj2mov",
+  "scene": {"wind": "wind.blend", 
+       	    "rotate": "rotate.blend", 
+	    "ball": "ball.blend", 
+	    "drape": "drape.blend"},
+  "out_file": "blend_cam.json"
+}

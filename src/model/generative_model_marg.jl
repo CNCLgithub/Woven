@@ -45,31 +45,34 @@ const default_config_params = ConfigParams(sim_num=1,
 end
 
 
-
 MASS_VAR_SMALL = 0.04
 MASS_VAR_LARGE = 0.8
+MASS_BERNOULLI = 0.8
+
 STIFF_VAR_SMALL = 0.02
 STIFF_VAR_LARGE = 0.4
-MASS_BERNOULLI = 0.8
 STIFF_BERNOULLI = 0.8
+
 DEPTH_MAP_VAR = 8
 WIND_VAR = 0.3
 
-get_var_value_mass() = bernoulli(MASS_BERNOULLI) ? MASS_VAR_SMALL : MASS_VAR_LARGE
 get_var_value_stiffness() = bernoulli(STIFF_BERNOULLI) ? STIFF_VAR_SMALL : STIFF_VAR_LARGE
 get_var_value(rm_var::Float64, var_small::Float64, var_large::Float64) = bernoulli(rm_var) ? var_small : var_large
+my_print(my_array::Array{Float64, 1}) = println(my_array)
 
 @gen (static) function sample_init_state(cloth_pos::Array{Array{Float64, 1}, 1},
                                          cloth_vel::Array{Array{Float64, 1}, 1},
                                          object_pos::Array{Array{Float64, 1}, 1},
                                          object_vel::Array{Array{Float64, 1}, 1},
                                          init_depth_map::Array{Float64, 1},
+                                         cloth_mass_prior::Array{Float64, 1},
+                                         cloth_bs_prior::Array{Float64, 1},
+                                         cloth_prior_w::Array{Float64, 1},
                                          cparam::ConfigParams)
-
-    cloth_mass = @trace(uniform(cparam.mass_min, cparam.mass_max), :cloth_mass)
-    cloth_stiffness = @trace(uniform(cparam.stiffness_min, cparam.stiffness_max), :cloth_stiffness)
-    ext_force = @trace(uniform(cparam.ext_force_min, cparam.ext_force_max), :ext_force)
+    cloth_mass = cloth_mass_prior[categorical(cloth_prior_w)]
+    cloth_stiffness = cloth_bs_prior[categorical(cloth_prior_w)]
     depth_map_simulated = @trace(broadcasted_normal(init_depth_map, [DEPTH_MAP_VAR]), :cloth_depth_map)
+    ext_force = @trace(uniform(cparam.ext_force_min, cparam.ext_force_max), :ext_force)
 
     state = StateSpace(cloth_pos, cloth_vel,
                        object_pos, object_vel,
@@ -86,24 +89,17 @@ end
 
 @gen (static) function cloth_kernel_rand_walk(t::Int, prev_state::StateSpace, bb_map::Dict, cparam::ConfigParams)
 
-    mass = prev_state.cloth_mass
+    new_mass = prev_state.cloth_mass
+
     stiffness = prev_state.cloth_stiffness
-    ext_force = prev_state.ext_force
-
-    mass_var_value = get_var_value_mass()
     stiffness_var_value = get_var_value_stiffness()
-    ext_force_var_value = WIND_VAR
-
-    mass_boundary = Float64[cparam.mass_min, cparam.mass_max]
     stiffness_boundary = Float64[cparam.stiffness_min, cparam.stiffness_max]
-    ext_force_boundary = Float64[cparam.ext_force_min, cparam.ext_force_max]
-
-    new_cloth_mass = @trace(truncated_normal(mass, mass_var_value, mass_boundary), :cloth_mass)
-    new_cloth_stiffness = @trace(truncated_normal(stiffness, stiffness_var_value, stiffness_boundary), :cloth_stiffness)
-    new_ext_force = @trace(truncated_normal(ext_force, ext_force_var_value, ext_force_boundary), :ext_force)
+    new_stiffness = @trace(truncated_normal(stiffness, stiffness_var_value, stiffness_boundary), :cloth_stiffness)
     
-    new_mass = new_cloth_mass
-    new_stiffness = new_cloth_stiffness
+    ext_force = prev_state.ext_force
+    ext_force_var_value = WIND_VAR
+    ext_force_boundary = Float64[cparam.ext_force_min, cparam.ext_force_max]
+    new_ext_force = @trace(truncated_normal(ext_force, ext_force_var_value, ext_force_boundary), :ext_force)
 
     # ---------------------------- CLOTH STATE ---------------------------------
     prev_cloth_pos = prev_state.cloth_pos
@@ -162,11 +158,15 @@ kernel_random_walk = Gen.Unfold(cloth_kernel_rand_walk)
                        object_vel::Array{Array{Float64, 1}, 1},
                        init_depth_map::Array{Float64, 1},
                        bb_map::Dict,
+                       cloth_mass_prior::Array{Float64, 1},
+                       cloth_bs_prior::Array{Float64, 1},
+                       cloth_prior_w::Array{Float64, 1},
                        cparam::ConfigParams)
 
     init_state = @trace(sample_init_state(cloth_pos, cloth_vel,
                                           object_pos, object_vel,
-                                          init_depth_map, cparam), :init_state)
+                                          init_depth_map, cloth_mass_prior,
+                                          cloth_bs_prior, cloth_prior_w, cparam), :init_state)
 
     states = @trace(kernel_random_walk(T, init_state, bb_map, cparam), :kernel)
     return states

@@ -20,7 +20,7 @@ function filter_flatten_cloth(cloth_pos::Array{Array{Float64, 1}, 1},
             continue
         end
         for j in total_edge_layers + 1:total_points - total_edge_layers
-            if j % 4 == 0 
+            if j % 4 == 0
                 continue
             end
             append!(delete_indices, total_points * i + j)

@@ -1,6 +1,7 @@
 module Constants
 
-export CUR_SCENE_MASS_STIFF_COMB, JOB_ID, TOTAL_INFER_ITERATIONS
+export CUR_SCENE_MASS_STIFF_COMB, JOB_ID, TOTAL_INFER_ITERATIONS,
+       PRIOR_CLOTH, EXP_COND, EXT_FOR_CUR_JOB
 export BASE_DIR_PATH, BASE_LIB_PATH, BASE_PY_PATH, RESULTS_PATH,
        FLEX_SIM_PATH, DP_PATH,
        TIME_INTERVAL, BALL_SCENARIO_START_INDEX, DEPTH_MAP_CONFIG
@@ -8,6 +9,9 @@ export BASE_DIR_PATH, BASE_LIB_PATH, BASE_PY_PATH, RESULTS_PATH,
 CUR_SCENE_MASS_STIFF_COMB = "wind_2.0_2.0"
 JOB_ID = "00000000"
 TOTAL_INFER_ITERATIONS = 0
+PRIOR_CLOTH = "0_drape_0.0_0.0_0"
+EXP_COND = "mass_or_stiff"
+EXT_FOR_CUR_JOB = "00000000"
 
 const BASE_DIR_PATH = joinpath(dirname(dirname(dirname(@__FILE__))))
 const BASE_LIB_PATH = joinpath(BASE_DIR_PATH, "library")
@@ -30,6 +34,8 @@ const DEPTH_MAP_CONFIG = (;img_w=540,
                            debug_dp_root_folder=joinpath(BASE_DIR_PATH, "depth_map", "julia_debug"),
                            debug_dp_julia_folder=joinpath(DP_PATH, "out"))
 
+
+## Create necessary folders
 (DEPTH_MAP_CONFIG.debug_dp) && (mkpath(DEPTH_MAP_CONFIG.debug_dp_julia_folder))
 
 end

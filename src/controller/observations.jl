@@ -28,8 +28,8 @@ function load_json(obj_path::String)
     out_str = ""
     out_parsed = []
     open(obj_path, "r") do f
-        out_str = read(f, String)       # file to string
-        out_parsed=JSON.parse(out_str)  # parse and transform data
+        out_str = read(f, String)
+        out_parsed=JSON.parse(out_str)
     end
     return out_parsed
 end
@@ -73,11 +73,9 @@ function get_weighted_depth_map_mask(depth_map::Array{Float64, 1},
         summed_depth_map_mask = summed_depth_map_mask + depth_map[idx_start:idx_end]
         idx_start = idx_end + 1
     end
-    ## normalize
     tmp_min = min(summed_depth_map_mask...)
     tmp_max = max(summed_depth_map_mask...)
     summed_depth_map_mask = 255.0 .* (summed_depth_map_mask .- tmp_min) ./(tmp_max - tmp_min)
-    # println(length(summed_depth_map_mask))
     return summed_depth_map_mask
 end
 
@@ -100,7 +98,6 @@ function get_final_flattened_obs(prev_flattened_cloth::Array{Float64, 1},
     - `summed_obs`: size is the same as "curr_flattened_cloth", with pixel number summed-up
 
     """
-    #total_points_per_mask = Int(Length(curr_flattened_cloth))
 
     if total_masks < 5
         weight_decay_rate = [1.0, 0.8, 0.6, 0.4, 0.2]
@@ -148,16 +145,15 @@ function get_simulated_data(cloth_positions::Array{Array{Float64, 1}, 1},
     t               : the time step to be queried
     """
 
-    # For debug
-    if DEPTH_MAP_CONFIG.debug_stiff
-        mass = DEPTH_MAP_CONFIG.debug_mass_val
-        stiffness = DEPTH_MAP_CONFIG.debug_stiff_val
+    flex_f_prefix = "trials"
+    
+
+    if EXP_COND != "mass_or_stiff"
+        extention = EXT_FOR_CUR_JOB * '_' * extention
     end
 
 
 
-    #flex_f_prefix = "trials-" * CUR_SCENE_MASS_STIFF_COMB
-    flex_f_prefix = "trials"
     arguments = ["--scene", string(ScenarioType(sim_num)),
                  "--input_t_frame", string(time_step_flex),
                  "--cloth_position", string(cloth_positions),
@@ -168,34 +164,27 @@ function get_simulated_data(cloth_positions::Array{Array{Float64, 1}, 1},
                  "--bstiff", string(stiffness),
                  "--shstiff", string(stiffness),
                  "--ststiff", string(stiffness),
-                 "--extforce", string(external_force),
                  "--flex_output_root_path", string("experiments/simulation/" * extention * "/" * flex_f_prefix * "/")]
 
+    if EXP_COND == "mass_or_stiff"
+        push!(arguments, "--extforce")
+        push!(arguments, string(external_force))
+    else
+        ext_force = -1
+    end
+
+                 
     simulate_next_frame_flex(arguments)
 
     sim_path = joinpath(BASE_PY_PATH, "experiments/simulation/" * extention)
-    #obj_path_prev = joinpath(sim_path, "trials_cloth_0.obj")
     obj_path_curr = joinpath(sim_path, flex_f_prefix * "_cloth_1.obj")
     obj_data = get_obj_data(obj_path_curr)
 
     if sim_num == 3 && time_step_flex < BALL_SCENARIO_START_INDEX
-        # object_positions, BALL_SCENARIO_START_INDEX=26 ==> ball_cloth_25.obj
-        # simulation at the 26th is the same as obs at the 26th; 0-26th frame should be copied from the obs
         obj_data.object_positions = deepcopy(object_positions)
         obj_data.object_velocities = deepcopy(object_velocities)
     end
 
-    # println(string(time_step_flex))
-    # println(obj_data.object_positions[1])
-
-    if DEPTH_MAP_CONFIG.debug_dp
-        # == Save trials_cloth_1.obj ==
-        #println(obj_path_curr) ==> simulation/t_ball_4.0_0.0078125/trials_cloth_1.obj
-        #println(joinpath(sim_path, string(ScenarioType(s..)) ==> simulation/t_ball_4.0_0.0078125/ball_cloth_0.0078125_4.0_5_0.6310230.obj
-        # println(string(time_step_flex))
-        # println(obj_data.object_positions[1])
-        cp(obj_path_curr, joinpath(sim_path, string(ScenarioType(sim_num)) * "_cloth_" * string(stiffness) * "_" * string(mass) * "_" * string(time_step_flex)  * "_"  * string(rand()) * ".obj"))
-    end
 
     return obj_data
 end
@@ -235,17 +224,9 @@ function get_simulated_data_after_n_frame(prev_cloth_pos::Array{Array{Float64, 1
     new_object_vel = Array{Float64, 1}[]
     new_depth_map_simulated = Float64[]
 
-    if DEPTH_MAP_CONFIG.debug_stiff
-        # Simulate with ground-truth mass & stiffness
-        new_mass = DEPTH_MAP_CONFIG.debug_mass_val
-        new_stiffness = DEPTH_MAP_CONFIG.debug_stiff_val
-    end
 
     println("\n")
     for i = 1:total_masks+1
-        # println(t_for_flex)
-        # println(prev_cloth_pos[1:3])
-        # println(prev_cloth_vel[1:3])
         data = get_simulated_data(prev_cloth_pos, prev_cloth_vel,
                                   prev_object_pos, prev_object_vel,
                                   new_mass, new_stiffness, ext_force,
@@ -287,13 +268,6 @@ function get_simulated_data_after_n_frame(prev_cloth_pos::Array{Array{Float64, 1
         prev_object_vel = new_object_vel
         t_for_flex = t_for_flex + 1
     end
-
-    # "flex_t = 3" indicates that the model is simulating and output the 3rd frame, not the 4th.
-    # println("\e[0m\e[38;2;0;255;0;249m", "Simulated..." * ": t = " * string(t) *
-    #                                      ", flex_t = [" * string(t_for_flex-1-total_masks) *
-    #                                      ", " * string(t_for_flex-1) * "]" *
-    #                                      ", mass = " * string(new_mass) *
-    #                                      ", stiffness = " * string(new_stiffness))
 
     println("Simulated..." * ": t = " * string(t) *
             ", flex_t = [" * string(t_for_flex-1-total_masks) *

@@ -51,7 +51,7 @@ fi
 if [[ "$@" =~ "cont_pull" ]] || [[ "$@" =~ "all" ]]; then
     if [[ ! -f "${ENV[cont]}" ]]; then
         echo_blue "Pulling singularity container..."
-        wget "https://osf.io/download/xw7qp" -O "${ENV[cont]}"
+        wget "https://osf.io/download/jqvef" -O "${ENV[cont]}"
     else
         echo_blue "Container already exists. Skipping download."
     fi
@@ -103,7 +103,7 @@ fi
 
 if [[ "$@" =~ "data" ]] || [[ "$@" =~ "all" ]];then
     echo_blue "Pulling data..."
-    wget "https://osf.io/download/pxwdk" -O "library.tar.gz"
+    wget "https://osf.io/download/5k2qs" -O "library.tar.gz"
     tar -xzf library.tar.gz library && rm library.tar.gz
 else
     echo_blue "Not pulling any data"

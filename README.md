@@ -1,8 +1,6 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Woven](https://img.shields.io/badge/language-Julia-red.svg)]()
 
-> since 2024-07-13
-
 # Woven
 Implementation of Woven model in "Computational models reveal that intuitive physics underlies visual processing of soft objects"
 

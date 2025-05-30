@@ -6,6 +6,7 @@ export BASE_DIR_PATH, BASE_LIB_PATH, BASE_PY_PATH, RESULTS_PATH,
        FLEX_SIM_PATH, DP_PATH,
        TIME_INTERVAL, BALL_SCENARIO_START_INDEX, DEPTH_MAP_CONFIG
 
+#--- Global Para (passed from input) ---#
 CUR_SCENE_MASS_STIFF_COMB = "wind_2.0_2.0"
 JOB_ID = "00000000"
 TOTAL_INFER_ITERATIONS = 0
@@ -13,6 +14,7 @@ PRIOR_CLOTH = "0_drape_0.0_0.0_0"
 EXP_COND = "mass_or_stiff"
 EXT_FOR_CUR_JOB = "00000000"
 
+#--- Constants ---#
 const BASE_DIR_PATH = joinpath(dirname(dirname(dirname(@__FILE__))))
 const BASE_LIB_PATH = joinpath(BASE_DIR_PATH, "library")
 const BASE_PY_PATH = joinpath(BASE_DIR_PATH, "flex_julia")

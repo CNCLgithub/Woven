@@ -26,28 +26,14 @@ This project is tested and supported on:
 ## Setup and running
 1. Clone repository `git clone https://github.com/CNCLgithub/Woven.git` and `cd Woven`.
 2. Run `bash setup.sh all` to download the Singularity container and all required data.
-
-
-
-
-
-
-
-
-
-```
-
-## Run the inference
-
-To run the demo of the joint-inference step, use the following commands:
-```
- ./run.sh julia src/exp_basic.jl 1/wind_0.5_2.0
- ./run.sh julia src/exp_basic.jl 2/drape_0.5_0.0078125
- ./run.sh julia src/exp_basic.jl 3/ball_0.5_0.0078125
- ./run.sh julia src/exp_basic.jl 4/rotate_0.5_2.0
-```
-To run the demo of the marginalization step, use the following command:
-```
-bash demo_marg.sh
-```
-## Citation
+3. Run the demo of the inference process (i.e., Eq. 1 in the paper), use the following command:
+    ```
+     ./run.sh julia src/exp_basic.jl 1/wind_0.5_2.0
+     ./run.sh julia src/exp_basic.jl 2/drape_0.5_0.0078125
+     ./run.sh julia src/exp_basic.jl 3/ball_0.5_0.0078125
+     ./run.sh julia src/exp_basic.jl 4/rotate_0.5_2.0
+    ```
+4. Run the demo of the marginalization process (i.e., Eq. 2 in the paper), use the following command:
+    ```
+    bash demo_marg.sh
+    ```

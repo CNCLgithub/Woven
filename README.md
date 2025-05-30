@@ -41,14 +41,14 @@ This project has been tested and is supported on the following configurations:
 
 ## ⚙️ Setup and Running
 
-### 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/CNCLgithub/Woven.git
 cd Woven
 ```
 
-### 2. Download the Singularity Container and Required Data
+### 2. Download the singularity container and required data
 
 ```bash
 bash setup.sh all
@@ -80,7 +80,7 @@ bash setup.sh all
 ./run.sh julia src/exp_basic.jl 4/rotate_0.5_2.0
 ```
 
-### 4. Run the Marginalization Process (corresponding to Equation 2 in the paper)
+### 4. Run the marginalization process (corresponding to Equation 2 in the paper)
 
 ```bash
 ./run.sh julia src/exp_basic_marg.jl <folder_index>/<target_scene>_<target_mass>_<target_stiffness> \
@@ -111,9 +111,24 @@ bash setup.sh all
 ```bash
 bash demo_marg.sh
 ```
-
+---
 ## 🚀 Performing the Experiment
 
+Take the stiffness matching task as an example. Suppose we have a trial consisting of:
+
+- **Test (match)**: `wind_0.5_0.0078125`
+- **Target**: `drape_2.0_0.0078125`
+- **Test (distractor)**: `rotate_0.25_2.0`
+
+We proceed as follows:
+
+1. **Run inference (Step 3)** separately for each of the two test items:  
+   - This produces **20 particles** per test item.  
+   - Each particle carries an inferred **mass** and **stiffness**, along with an associated **weight** from the particle filter.
+
+2. For each test item, **use its particle filter results as the prior** to run the **marginalization process** on the **target item** (Step 4).
+
+3. **Repeat this process** for every trial in the dataset.
 
 
 

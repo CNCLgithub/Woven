@@ -9,9 +9,11 @@ include("./cloth_gen_marg.jl")
 
 include("./model/inference_marg.jl")
 
+# SMC particles
 num_particles = 3
 total_masks = 3
 init_frame_num = 1
+# Increase this value to simulate multiple independent chains.
 @eval Constants TOTAL_INFER_ITERATIONS = 1
 
 specific_dir_list = String[]

@@ -7,7 +7,8 @@ using ..OBJUtils
 using ..Constants
 using ..PyTalker
 
-
+# Load observation data from disk and prepare them as initial states and Gen.ChoiceMap 
+# structures for use in probabilistic inference.
 function load_observations(specific_dir_list::Array{String,1}=String[],
                            total_masks::Int64=0,
                            init_frame_num::Int64=1)
@@ -15,6 +16,7 @@ function load_observations(specific_dir_list::Array{String,1}=String[],
     end_idx=0
     bb_f=""
 
+    # Set suffix for depth map filenames based on whether bounding box cropping is used
     if DEPTH_MAP_CONFIG.crop_with_bb==1
         dp_f_suffix = "_" * string(DEPTH_MAP_CONFIG.img_w) * "_" * string(total_masks)* "_" * DEPTH_MAP_CONFIG.mesh_or_points * "_crop.json"
         end_idx = 4
@@ -23,7 +25,7 @@ function load_observations(specific_dir_list::Array{String,1}=String[],
         end_idx = 2
     end
 
-
+    # If no specific directories are provided, search in all scenario types
     obs_obj_filenames = Dict()
     if isempty(specific_dir_list)
         for s in instances(ScenarioType)
@@ -36,6 +38,7 @@ function load_observations(specific_dir_list::Array{String,1}=String[],
             end
         end
     else
+        # Otherwise, load only from specified directories
         for s_dir in specific_dir_list
             if isdir(s_dir)
                 files = filter(x->occursin(dp_f_suffix, x), readdir(s_dir))
@@ -44,13 +47,14 @@ function load_observations(specific_dir_list::Array{String,1}=String[],
         end
     end
 
-    init_state_dict = Dict()
-    observations_gen = Dict()
-    bb_map = Dict()
+    init_state_dict = Dict()      # Stores initial cloth and object states
+    observations_gen = Dict()     # Stores generated observations as ChoiceMaps
+    bb_map = Dict()               # Stores bounding boxes if used
 
     for dir_name in collect(keys(obs_obj_filenames))
         sim_num = parse(Int64, split(dir_name, "/")[end - 1])
         bb_map_cur_dir = Dict()
+        # If using bounding box cropping, load bounding box map for the scene
         if DEPTH_MAP_CONFIG.crop_with_bb==1
             cur_dir_name = split(dir_name, "/")[end]
             sim_scene_name = split(cur_dir_name,'_')[1]
@@ -63,12 +67,15 @@ function load_observations(specific_dir_list::Array{String,1}=String[],
         init_masked_depth_map = Float64[]
         obs_pos_vel=""
 
+        # Load initial depth maps and positions for t = 0
         for i in init_frame_num:init_frame_num+total_masks
             f_mesh_suffix = join(split(split(obs_obj_filenames[dir_name][i],".")[1],"_")[1:(end-end_idx)], "_")
 
             f_obs_mesh_path = joinpath(dir_name, f_mesh_suffix * ".obj")
             f_obs_depth_path = joinpath(dir_name, obs_obj_filenames[dir_name][i])
             obs_pos_vel = get_init_obs(f_obs_mesh_path)
+      
+            # Handle special case with additional object (e.g. ball scenario)
             if sim_num == 3
                 f_obj_suffix = join(split(split(obs_obj_filenames[dir_name][BALL_SCENARIO_START_INDEX],".")[1],"_")[1:(end-end_idx)], "_")
                 f_obj_mesh_path = joinpath(dir_name, f_obj_suffix * ".obj")
@@ -80,6 +87,8 @@ function load_observations(specific_dir_list::Array{String,1}=String[],
             init_depth_map = load_obs_depth(f_obs_depth_path)
             init_masked_depth_map = [init_masked_depth_map;init_depth_map]
         end
+
+        # Combine masked depth maps into a single weighted map
         init_masked_depth_map_size = Int(length(init_masked_depth_map)/(total_masks+1))
         init_summed_masked_depth_map = get_weighted_depth_map_mask(init_masked_depth_map, init_masked_depth_map_size)
 
@@ -127,10 +136,12 @@ end
 
 
 
-
+# Load all observations (all cloth_pos and cloth_vel)
 function collect_observations(specific_dir_list::Array{String,1}=String[],
                               total_masks::Int64=0,
                               init_frame_num::Int64=1)
+  
+    # Find and organize observation OBJ files for each MASS-STIFFNESS combination available
     obs_obj_filenames = Dict()
     if isempty(specific_dir_list)
         for s in instances(ScenarioType)
@@ -160,6 +171,7 @@ function collect_observations(specific_dir_list::Array{String,1}=String[],
         init_masked_depth_map = Float64[]
         obs_pos_vel=""
 
+      # Load initial frame data and render depth maps via Python
         for i in init_frame_num:init_frame_num+total_masks
             f_obs_path = joinpath(dir_name, obs_obj_filenames[dir_name][i])
             obs_pos_vel = get_init_obs(f_obs_path)
@@ -195,6 +207,7 @@ function collect_observations(specific_dir_list::Array{String,1}=String[],
         observations_gen[dir_name] = Vector{Gen.ChoiceMap}(undef, total_obs)
         masked_depth_map = Float64[1.0]
 
+        # Collect depth map observations for each time step
         for i in init_frame_num:init_frame_num + total_obs - 1
             time_t = i - init_frame_num + 1
             obs_pos_vel=""

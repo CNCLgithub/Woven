@@ -8,20 +8,25 @@ using Statistics
 using Distances
 import JSON
 
+# Exported symbols for external use
 export ScenarioType, wind, drape, ball, rotate, get_init_obs, get_curr_obs,
        get_final_flattened_obs, get_simulated_data,
        get_weighted_depth_map_mask, get_simulated_data_after_n_frame,
        load_obs_depth, load_json, save_array_to_txt
 
-
+# Enumeration of supported scenario types
 @enum ScenarioType wind=1 drape ball rotate
 
+# === Observation Utilities === #
 
+# Load cloth and object state from an .obj file at t = 0
 get_init_obs(obj_path::String) = get_obj_data(obj_path)
 
 
+# Load and parse a JSON file (e.g., depth map)
 function load_json(obj_path::String)
     """
+    Load a depth map JSON file from the given path and return the parsed array or object.
     obj_path : depth_map json file
     """
 
@@ -34,7 +39,7 @@ function load_json(obj_path::String)
     return out_parsed
 end
 
-
+# Load and convert a 1D depth map array from a JSON file
 function load_obs_depth(obj_path::String)
     out_parsed = load_json(obj_path)
     out_float_array = convert(Array{Float64,1}, out_parsed)
@@ -42,7 +47,7 @@ function load_obs_depth(obj_path::String)
 end
 
 
-
+# Load cloth and object state from .obj file at t = current
 function get_curr_obs(curr_file_path::String)
     """
     prev_file_path : path to the obj file in the previous time step
@@ -52,11 +57,13 @@ function get_curr_obs(curr_file_path::String)
 end
 
 
-
+# Compute a weighted sum of a sequence of depth maps using decay (linear or exponential)
 function get_weighted_depth_map_mask(depth_map::Array{Float64, 1},
                                      points_per_map::Int64)
 
     total_depth_map_n = Int(length(depth_map)/points_per_map)
+       
+    # Choose decay scheme
     if DEPTH_MAP_CONFIG.weight_decay == "linear"
         weight_decay_rate = collect(range(0.2, stop = 1.0, length = max(5,total_depth_map_n)))
     elseif DEPTH_MAP_CONFIG.weight_decay == "exp"
@@ -64,8 +71,12 @@ function get_weighted_depth_map_mask(depth_map::Array{Float64, 1},
     else
         error("invalid [weight_decay_rate] value -- linear|exp")
     end
+
+    # Use only the final weights matching number of maps
     weight_decay_rate = weight_decay_rate[end-total_depth_map_n+1:end]
     summed_depth_map_mask = zeros(points_per_map)
+
+    # Apply weights to each segment and accumulate
     idx_start = 1
     for i in 1:total_depth_map_n
         idx_end = idx_start + points_per_map-1
@@ -73,6 +84,8 @@ function get_weighted_depth_map_mask(depth_map::Array{Float64, 1},
         summed_depth_map_mask = summed_depth_map_mask + depth_map[idx_start:idx_end]
         idx_start = idx_end + 1
     end
+       
+    # Normalize to [0, 255] for visualization/standard format
     tmp_min = min(summed_depth_map_mask...)
     tmp_max = max(summed_depth_map_mask...)
     summed_depth_map_mask = 255.0 .* (summed_depth_map_mask .- tmp_min) ./(tmp_max - tmp_min)
@@ -80,7 +93,7 @@ function get_weighted_depth_map_mask(depth_map::Array{Float64, 1},
 end
 
 
-
+# Combine multiple frames of cloth observations into a single flattened input with decay weights
 function get_final_flattened_obs(prev_flattened_cloth::Array{Float64, 1},
                                  curr_flattened_cloth::Array{Float64, 1},
                                  total_points_per_mask::Int64,
@@ -98,26 +111,30 @@ function get_final_flattened_obs(prev_flattened_cloth::Array{Float64, 1},
     - `summed_obs`: size is the same as "curr_flattened_cloth", with pixel number summed-up
 
     """
-
+       
+    # Define decay weights
     if total_masks < 5
         weight_decay_rate = [1.0, 0.8, 0.6, 0.4, 0.2]
     else
         weight_decay_rate = range(1.0, stop = 0.2, length = total_masks+1)
     end
-
+       
     summed_obs = zeros(total_points_per_mask)
 
+    # No temporal history available — return current state only
     if total_masks == 0 || time_step_num == 1
         return deepcopy(curr_flattened_cloth), deepcopy(curr_flattened_cloth)
     end
 
+    # Concatenate current and previous frames (most recent first)
     returned = [deepcopy(curr_flattened_cloth); deepcopy(prev_flattened_cloth)]
+    # Trim to keep only most recent (total_masks + 1) frames
     while length(returned) > total_points_per_mask * (total_masks + 1)
         returned = returned[1:end - total_points_per_mask]
     end
     cur_mask_n = Int(length(returned) / total_points_per_mask)
 
-
+    # Apply decay and sum observations
     for i in 1:cur_mask_n
         summed_obs = summed_obs + (weight_decay_rate[i] .* returned[(i-1)*total_points_per_mask+1: i*total_points_per_mask])
     end
@@ -125,7 +142,9 @@ function get_final_flattened_obs(prev_flattened_cloth::Array{Float64, 1},
     return deepcopy(returned), deepcopy(summed_obs)
 end
 
+# === Simulation Wrappers === #
 
+# Run one step of physical simulation using specified physical parameters and return object state
 function get_simulated_data(cloth_positions::Array{Array{Float64, 1}, 1},
                             cloth_velocities::Array{Array{Float64, 1}, 1},
                             object_positions::Array{Array{Float64, 1}, 1},
@@ -139,6 +158,8 @@ function get_simulated_data(cloth_positions::Array{Array{Float64, 1}, 1},
                             time_interval::Float64,
                             extention::String)
     """
+    Simulate the next frame using Flex simulation engine and return updated state from .obj output.
+
     positions       : the array of all position vectors (vertices)
     velocities      : the array of all velocity vectors
     sim_num         : the simulation number designating the scenario being played
@@ -153,7 +174,7 @@ function get_simulated_data(cloth_positions::Array{Array{Float64, 1}, 1},
     end
 
 
-
+    # Build simulation command arguments
     arguments = ["--scene", string(ScenarioType(sim_num)),
                  "--input_t_frame", string(time_step_flex),
                  "--cloth_position", string(cloth_positions),
@@ -179,7 +200,8 @@ function get_simulated_data(cloth_positions::Array{Array{Float64, 1}, 1},
     sim_path = joinpath(BASE_PY_PATH, "experiments/simulation/" * extention)
     obj_path_curr = joinpath(sim_path, flex_f_prefix * "_cloth_1.obj")
     obj_data = get_obj_data(obj_path_curr)
-
+       
+    # Special case: static object for ball scenario
     if sim_num == 3 && time_step_flex < BALL_SCENARIO_START_INDEX
         obj_data.object_positions = deepcopy(object_positions)
         obj_data.object_velocities = deepcopy(object_velocities)
@@ -189,7 +211,7 @@ function get_simulated_data(cloth_positions::Array{Array{Float64, 1}, 1},
     return obj_data
 end
 
-
+# Save an array to a file if save_flag is true
 function save_array_to_txt(path::String, save_flag::Bool,
                            array_data::String)
     if save_flag
@@ -200,6 +222,8 @@ function save_array_to_txt(path::String, save_flag::Bool,
     return 0
 end
 
+
+# Simulate multiple consecutive frames and return full depth map trace and updated state
 function get_simulated_data_after_n_frame(prev_cloth_pos::Array{Array{Float64, 1}, 1},
                                           prev_cloth_vel::Array{Array{Float64, 1}, 1},
                                           prev_object_pos::Array{Array{Float64, 1}, 1},
@@ -214,6 +238,7 @@ function get_simulated_data_after_n_frame(prev_cloth_pos::Array{Array{Float64, 1
                                           extention::String,
                                           total_masks::Int64,
                                           bb_map_cur_time)
+
     """
     Simulate n=total_masks+1 consecutive frames and save the concatenated depth-maps as a vector
     """
@@ -227,6 +252,7 @@ function get_simulated_data_after_n_frame(prev_cloth_pos::Array{Array{Float64, 1
 
     println("\n")
     for i = 1:total_masks+1
+        # Simulate next step
         data = get_simulated_data(prev_cloth_pos, prev_cloth_vel,
                                   prev_object_pos, prev_object_vel,
                                   new_mass, new_stiffness, ext_force,
@@ -241,6 +267,7 @@ function get_simulated_data_after_n_frame(prev_cloth_pos::Array{Array{Float64, 1
         new_object_pos = data.object_positions
         new_object_vel = data.object_velocities
 
+        # Build depth map rendering arguments
         arguments = ["--cloth_position", string(new_cloth_pos),
                      "--cur_scene_idx", string(sim_num),
                      "--frame_t", string(t_for_flex),
@@ -251,7 +278,8 @@ function get_simulated_data_after_n_frame(prev_cloth_pos::Array{Array{Float64, 1
                      "--img_h", string(DEPTH_MAP_CONFIG.img_h),
                      "--crop_with_bounding_box", string(DEPTH_MAP_CONFIG.crop_with_bb),
                      "--save_depth_map", string(DEPTH_MAP_CONFIG.save_dp)]
-
+        
+        # Add bounding box cropping if enabled
         if DEPTH_MAP_CONFIG.crop_with_bb == 1
             tmp_args = ["--bb_x", string(bb_map_cur_time[1]),
                         "--bb_y", string(bb_map_cur_time[2]),
@@ -259,16 +287,18 @@ function get_simulated_data_after_n_frame(prev_cloth_pos::Array{Array{Float64, 1
             arguments = [arguments; tmp_args]
         end
 
+        # Render depth map via Python
         new_cloth_depth_map = py_get_depth_map(arguments)
         new_depth_map_simulated = [new_depth_map_simulated;new_cloth_depth_map]
 
+        # Update state for next frame
         prev_cloth_pos = new_cloth_pos
         prev_cloth_vel = new_cloth_vel
         prev_object_pos = new_object_pos
         prev_object_vel = new_object_vel
         t_for_flex = t_for_flex + 1
     end
-
+       
     println("Simulated..." * ": t = " * string(t) *
             ", flex_t = [" * string(t_for_flex-1-total_masks) *
             ", " * string(t_for_flex-1) * "]" *

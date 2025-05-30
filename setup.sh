@@ -73,6 +73,10 @@ if [[ "${@}" =~ "python" ]] || [[ "$@" =~ "all" ]];then
     ./run.sh "python -m pip install --no-cache-dir poetry"
     ./run.sh "poetry config virtualenvs.create false"
     ./run.sh "poetry install -vvv"
+    
+    o3d_name="open3d-0.13.0-cp36-cp36m-manylinux_2_23_x86_64.whl"
+    wget "https://osf.io/download/fg5hw" -O $o3d_name
+    ./run.sh "python -m pip install $o3d_name torch==1.9.1 scikit-image==0.17.2"
     rm $o3d_name
 fi
 

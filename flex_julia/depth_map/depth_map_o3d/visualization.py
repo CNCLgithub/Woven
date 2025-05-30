@@ -2,19 +2,6 @@ import open3d
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-"""
-##########################################################################################
-Script Name                : visualization.py
-Description                : utils for depth map
-Author                     : Wenyan Bi
-Usage                      : 
-Output                     : 
-Date                       : 
-##########################################################################################
-"""
-
-
 def update_view(camera, intrinsics, extrinsic, width, height):
     z_near = camera.get_near()
     z_far = camera.get_far()

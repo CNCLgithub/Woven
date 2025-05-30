@@ -54,7 +54,7 @@ cd Woven
 bash setup.sh all
 ```
 
-### 3. Run the Inference Process (Equation 1 in the Paper)
+### 3. Run the inference process (corresponding to Equation 1 in the paper)
 
 ```bash
 ./run.sh julia src/exp_basic.jl <folder_index>/<scene_name>_<mass_value>_<stiffness_value>
@@ -80,7 +80,7 @@ bash setup.sh all
 ./run.sh julia src/exp_basic.jl 4/rotate_0.5_2.0
 ```
 
-### 4. Run the Marginalization Process (Equation 2 in the Paper)
+### 4. Run the Marginalization Process (corresponding to Equation 2 in the paper)
 
 ```bash
 ./run.sh julia src/exp_basic_marg.jl <folder_index>/<target_scene>_<target_mass>_<target_stiffness> \
@@ -105,12 +105,15 @@ bash setup.sh all
 - `<test_mass>` and `<test_stiffness>` specify the physical parameters of the test item.
 - `<inferred_test_mass>`:  Underscore (`_`) separated list of inferred mass values of the test item from all particles in the final step of the particle filter. For example, if you use 20 particles, this will contain 20 mass values (one for each particle). Example: `0.25_0.5_0.5_0.75_0.6_...` (20 values total).
 - `<inferred_test_stiff>`:  Underscore (`_`) separated list of inferred stiffness values of the test item from all particles in the final step of the particle filter. For example, if you use 20 particles, this will contain 20 stiffness values (one for each particle).
-- `<particle_weights_test>`:  Underscore (`_`) separated list of weights for the particles used in the inference of the test item. Each weight corresponds to one particle's posterior probability from the final step of the particle filter. All weights should sum to 1. Example: `0.05_0.10_0.07_0.08_...` (20 values total).
+- `<particle_weights_test>`:  Underscore (`_`) separated list of weights for the particles used in the inference of the test item. Each weight corresponds to one particle's posterior probability from the final step of the particle filter. The weights should sum to 1 (up to numerical precision). Example: `0.05_0.10_0.07_0.08_...` (20 values total).
 
 #### Example Commands
 ```bash
 bash demo_marg.sh
 ```
+
+## 🚀 Performing the Experiment
+
 
 
 

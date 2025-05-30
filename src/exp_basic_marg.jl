@@ -60,6 +60,7 @@ println("BALL_SCENARIO_START_INDEX => $(BALL_SCENARIO_START_INDEX)")
 println(DEPTH_MAP_CONFIG)
 println("===============================================================================")
 
+# Load pre-computed dp to speed up computation.
 init_state_dict, observations_dict, bb_map = load_observations(specific_dir_list, total_masks, init_frame_num)
 
 run(num_particles, init_state_dict, observations_dict, total_masks, init_frame_num, bb_map, mass_prior, stiff_prior, prior_w)

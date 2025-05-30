@@ -122,7 +122,7 @@ Take the stiffness matching task as an example. Suppose we have a trial consisti
 
 We proceed as follows:
 
-1. Run the **inference process (Step 3)** separately for each of the two test items:  
+1. Run the **inference process** (Step 3) separately for each of the two test items:  
    - This produces 20 particles per test item.  
    - Each particle carries an inferred mass and stiffness, along with an associated weight from the particle filter.
 

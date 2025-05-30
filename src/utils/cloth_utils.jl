@@ -2,6 +2,7 @@ module ClothUtils
 export filter_flatten_cloth
 
 
+# Extract the particles' position and velocity from the cloth mesh
 function filter_flatten_cloth(cloth_pos::Array{Array{Float64, 1}, 1},
                               cloth_vel::Array{Array{Float64, 1}, 1})
 

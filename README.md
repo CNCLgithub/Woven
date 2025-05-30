@@ -83,5 +83,34 @@ bash setup.sh all
 ### 4. Run the Marginalization Process (Equation 2 in the Paper)
 
 ```bash
+./run.sh julia src/exp_basic_marg.jl <folder_index>/<target_scene>_<target_mass>_<target_stiffness> \
+  <experiment_tag> \
+  <random_seed>_<test_scene>_<test_mass>_<test_stiffness>_<random_suffix> \
+  <inferred_test_mass> \
+  <inferred_test_stiff> \
+  <particle_weights_test>
+```
+#### Parameters
+
+- `<folder_index>` corresponds to the scenario:
+  - `1` → `wind`
+  - `2` → `drape`
+  - `3` → `ball`
+  - `4` → `rotate`
+
+- `<target_scene>` specify the scene of the target item, should be one of: `wind`, `drape`, `ball`, `rotate`.
+- `<target_mass>` and `<target_stiffness>` specify the physical parameters of the target item.
+- `<experiment_tag>` should be `stiffness` or `mass`.
+- `<test_scene>` specify the scene of the test item.
+- `<test_mass>` and `<test_stiffness>` specify the physical parameters of the test item.
+- `<inferred_test_mass>`:  Underscore (`_`) separated list of inferred mass values of the test item from all particles in the final step of the particle filter. For example, if you use 20 particles, this will contain 20 mass values (one for each particle). Example: `0.25_0.5_0.5_0.75_0.6_...` (20 values total).
+- `<inferred_test_stiff>`:  Underscore (`_`) separated list of inferred stiffness values of the test item from all particles in the final step of the particle filter. For example, if you use 20 particles, this will contain 20 stiffness values (one for each particle).
+- `<particle_weights_test>`:  Underscore (`_`) separated list of weights for the particles used in the inference of the test item. Each weight corresponds to one particle's posterior probability from the final step of the particle filter. All weights should sum to 1. Example: `0.05_0.10_0.07_0.08_...` (20 values total).
+
+#### Example Commands
+```bash
 bash demo_marg.sh
 ```
+
+
+

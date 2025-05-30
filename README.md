@@ -122,11 +122,11 @@ Take the stiffness matching task as an example. Suppose we have a trial consisti
 
 We proceed as follows:
 
-1. Run the **inference process** (Step 3) separately for each of the two test items:  
+1. Run the **inference process** (see step 3 above) separately for each of the two test items:  
    - This produces 20 particles per test item.  
    - Each particle carries an inferred mass and stiffness, along with an associated weight from the particle filter.
 
-2. For each test item, use its particle filter results as the prior to run the **marginalization process** on the target item (Step 4).
+2. For each test item, use its particle filter results as the prior to run the **marginalization process** on the target item (see step 4 above).
 
 3. Repeat this process for every trial in the dataset.
 

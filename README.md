@@ -130,5 +130,27 @@ We proceed as follows:
 
 3. Repeat this process for every trial in the dataset.
 
+---
+## Model Parameterization
+The key tunable parameters of the model are listed below. These can be adjusted to optimize performance or explore model behavior under different settings.
+#### In `src/exp_basic.jl`:
+```julia
+num_particles = 20      # Number of SMC particles
+total_masks   = 3       # Defines length of flow mask
+```
 
-
+#### In `src/model/generative_model.jl`:
+```julia
+# Defines mass random walk
+MASS_VAR_SMALL = 0.04
+MASS_VAR_LARGE = 0.8
+MASS_BERNOULLI = 0.8
+# Defines stiffness random walk
+STIFF_VAR_SMALL = 0.02
+STIFF_VAR_LARGE = 0.4
+STIFF_BERNOULLI = 0.8
+# Defines observation noise
+DEPTH_MAP_VAR = 8
+# Defines wind random walk
+WIND_VAR = 0.3
+```

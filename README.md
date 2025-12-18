@@ -9,16 +9,6 @@ Implementation of the Woven model described in:
 > Wenyan Bi, Aalap D. Shah, Kimberly W. Wong, Brian J. Scholl, Ilker Yildirim  
 > *Nature Communications*, 2025
 
-## 📖 Citation
-
-```bibtex
-@article{Bi_Shah_Wong_Scholl_Yildirim,
-  title={Computational models reveal that intuitive physics underlies visual processing of soft objects},
-  author={Bi, Wenyan and Shah, Aalap D. and Wong, Kimberly W. and Scholl, Brian J. and Yildirim, Ilker},
-  journal={Nature Communications},
-  year={2025}
-}
-```
 
 ---
 

@@ -3,15 +3,6 @@
 
 # Woven
 
-Implementation of the Woven model described in:
-
-> **"Computational models reveal that intuitive physics underlies visual processing of soft objects"**  
-> Wenyan Bi, Aalap D. Shah, Kimberly W. Wong, Brian J. Scholl, Ilker Yildirim  
-> *Nature Communications*, 2025
-
-
----
-
 ## 🖥️ System Requirements
 
 This project has been tested and is supported on the following configurations:
